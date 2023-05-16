@@ -1,0 +1,19 @@
+{
+    "name": "D0bhareach Rug",
+    "symbol": "DOBH",
+    "description": "The Rug generated for D0bhareach",
+    "seller_fee_basis_points": 500,
+    "image": "https://arweave.net/MpdcbrVr5EuWj3PXG48x0JNDhf_OkR1M5IZIniqG5c8",
+    "external_url": "",
+    "edition": 0,
+    "attributes": [],
+    "properties": {
+      "files": [
+        {
+          "uri": "https://arweave.net/MpdcbrVr5EuWj3PXG48x0JNDhf_OkR1M5IZIniqG5c8",
+          "type": "image/png"
+        }
+      ],
+       "category": "image"
+    }
+}    
