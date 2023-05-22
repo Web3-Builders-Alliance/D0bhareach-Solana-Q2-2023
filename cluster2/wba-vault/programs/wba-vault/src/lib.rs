@@ -9,7 +9,6 @@ pub mod wba_vault {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        ctx.bumps.keys().for_each(|k| msg!("{:?}\n", k));
         let vault = &mut ctx.accounts.vault_state;
         vault.score =  0;
         // keys in BTreeMap are the same as names in Accounts, watch out!!!!
@@ -21,7 +20,10 @@ pub mod wba_vault {
     
     pub fn update_score(ctx: Context<VaultHolder>) -> Result<()> {
         let vault = &mut ctx.accounts.vault;
+        msg!("vault:?");
+        msg!("before add: {}", vault.score);
         vault.score += 1;
+        msg!("after add: {}", vault.score);
         Ok(())
     }
 }
@@ -46,12 +48,12 @@ pub struct Initialize<'info> {
 
 // have no idea why we need all bumps. This account is actual data holder
 #[account]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Vault {
     owner: Pubkey, // 32
     auth_bump: u8, // 1
     vault_bump: u8, // 1
-    score: u8, // 1 
+    pub score: u8, // 1 
 }
 
 impl Vault {
