@@ -54,9 +54,10 @@ describe("wba-vault", () => {
   vault_holder_pubkey = PublicKey.findProgramAddressSync(vault_seed, program.programId)[0];
   });
 
-  it("Starts an airdrop and confirms it", async () => {
+  it("Starts an airdrop and confirms it", async function() {
+    this.skip();
     // Airdrop 200 SOL to payer
-    const signature = await provider.connection.requestAirdrop(vault_state.publicKey, 0.5 * 1_000_000_000);
+    const signature = await provider.connection.requestAirdrop(vault_state.publicKey, 0.2 * 1_000_000_000);
     const latestBlockhash = await provider.connection.getLatestBlockhash();
     await provider.connection.confirmTransaction(
     {
@@ -66,7 +67,8 @@ describe("wba-vault", () => {
   "finalized");  
   });
 
-  it("init vault", async () => {
+  it("init vault", async function() {
+    this.skip();
     const signature = await provider.connection.requestAirdrop(vault_state.publicKey, 0.5 * 1_000_000_000);
     const latestBlockhash = await provider.connection.getLatestBlockhash();
     await provider.connection.confirmTransaction(
@@ -92,7 +94,7 @@ describe("wba-vault", () => {
     expect(r_vault.score).to.equal(0);
   });
 
-  it("update vault", async () => {
+  it("update vault", async function() {
     const signature = await provider.connection.requestAirdrop(vault_state.publicKey, 0.5 * 1_000_000_000);
     const latestBlockhash = await provider.connection.getLatestBlockhash();
     await provider.connection.confirmTransaction(
@@ -114,20 +116,14 @@ describe("wba-vault", () => {
     .rpc();
     let r_vault = await program.account.vault.fetch(vault_state.publicKey);
     expect(r_vault.score).to.equal(0);
-  /*
     // get from pda
-    const vault_seed = [Buffer.from('vault'), vault_holder_pubkey.toBuffer()] 
-    const vault_pubkey = PublicKey.findProgramAddressSync(vault_seed, program.programId)[0];
-    console.log("QQQQQQQQQQQQQQQQQQQQQQQQQQQ");
     const tx = await program.methods.updateScore()
     .accounts({
-      vault: vault_pubkey,
+      vault: vault_state.publicKey,
     })
-    .signers([user])
     .rpc();
-    console.log("Your transaction signature", tx);
-    let vault = await program.account.vault.fetch(vault_state.publicKey);
+
+    const vault = await program.account.vault.fetch(vault_state.publicKey);
     expect(vault.score).to.equal(1);
-    */
   });
 });

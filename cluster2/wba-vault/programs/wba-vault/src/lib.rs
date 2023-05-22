@@ -20,10 +20,7 @@ pub mod wba_vault {
     
     pub fn update_score(ctx: Context<VaultHolder>) -> Result<()> {
         let vault = &mut ctx.accounts.vault;
-        msg!("vault:?");
-        msg!("before add: {}", vault.score);
         vault.score += 1;
-        msg!("after add: {}", vault.score);
         Ok(())
     }
 }
@@ -50,9 +47,9 @@ pub struct Initialize<'info> {
 #[account]
 #[derive(Default, Debug)]
 pub struct Vault {
-    owner: Pubkey, // 32
-    auth_bump: u8, // 1
-    vault_bump: u8, // 1
+    pub owner: Pubkey, // 32
+    pub auth_bump: u8, // 1
+    pub vault_bump: u8, // 1
     pub score: u8, // 1 
 }
 
@@ -60,9 +57,10 @@ impl Vault {
     const VAULT_DATA_SIZE: usize = 8 + 32 + 1 + 1 + 1;
 
 }
-// need account derived with auth account which will hold account of vault in it.
+
 #[derive(Accounts)]
 pub struct VaultHolder<'info> {
-    #[account(mut, seeds = [b"vault"], bump = vault.vault_bump)]
+    #[account(mut)]
     pub vault: Account<'info, Vault>,
+    pub system_program: Program <'info, System>
 }
