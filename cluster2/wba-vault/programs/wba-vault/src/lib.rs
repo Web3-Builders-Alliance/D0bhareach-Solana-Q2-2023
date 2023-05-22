@@ -9,9 +9,11 @@ pub mod wba_vault {
     use super::*;
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        let vault = &mut ctx.accounts.vault;
+        ctx.bumps.keys().for_each(|k| msg!("{:?}\n", k));
+        let vault = &mut ctx.accounts.vault_state;
         vault.score =  0;
-        vault.auth_bump = *ctx.bumps.get("auth").unwrap();
+        // keys in BTreeMap are the same as names in Accounts, watch out!!!!
+        vault.auth_bump = *ctx.bumps.get("vault_auth").unwrap();
         vault.vault_bump = *ctx.bumps.get("vault_holder").unwrap();
         vault.owner = *ctx.accounts.owner.key;
         Ok(())
@@ -23,27 +25,23 @@ pub mod wba_vault {
         Ok(())
     }
 }
-// vault must be owned by who? I think the program itself. It's done automatically according to dosc.
-// this struct is for shape of context passed to initialized function.
+
 #[derive(Accounts)]
 pub struct Initialize<'info> {
-    /// CHECK:  this account is only to authorize vault_holder owned by my wallet.
-    #[account(seeds=[b"auth", owner.key().as_ref()], bump)]
+     #[account(mut)]
+    pub owner : Signer <'info>,
+
+    #[account(init, payer=owner, space=Vault::VAULT_DATA_SIZE)]
+    pub vault_state : Account <'info, Vault>,
+
+    #[account(seeds = [b"auth", vault_state.key().as_ref()], bump)]
+    /// CHECK don't need to validate.
     pub vault_auth: UncheckedAccount<'info>,
 
-    /// CHECK: this account is more down the line
-    #[account(seeds=[b"vault_holder", vault_auth.key().as_ref()], bump)]
-    pub vault_holder: UncheckedAccount<'info>,
+    #[account(seeds = [b"holder", vault_auth.key().as_ref()], bump)]
+    pub vault_holder : SystemAccount <'info>,
 
-    // account to hold vault data, seeded from vault_holder
-    #[account(init, payer = owner,
-        space = 8 + crate::Vault::VAULT_DATA_SIZE)]
-    pub vault: Account<'info, Vault>,
-    // account to pay, In my case it's my wallet. It used to create PDA which 
-    // is used to hold status of program in the vault.
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    pub system_program: Program<'info, System>,
+    pub system_program: Program <'info, System>
 }
 
 // have no idea why we need all bumps. This account is actual data holder
