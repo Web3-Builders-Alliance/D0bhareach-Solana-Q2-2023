@@ -16,5 +16,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.27.0"
-solana-program = "=1.14.18"
+anchor-lang = { git = "https://github.com/coral-xyz/anchor.git", features = ["init-if-needed"]}
+anchor-spl = { git = "https://github.com/coral-xyz/anchor.git" }
+toml_datetime = "0.6.1"
+# solana-program = "1.14.18"

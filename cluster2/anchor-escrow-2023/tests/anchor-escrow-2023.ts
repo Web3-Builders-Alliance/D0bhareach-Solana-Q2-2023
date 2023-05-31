@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor"
 import { BN } from "@coral-xyz/anchor"
 import { AnchorEscrow2023, IDL } from "../target/types/anchor_escrow_2023"
-import { PublicKey, Commitment, Keypair, SystemProgram } from "@solana/web3.js"
+import { PublicKey, Commitment, Keypair, SystemProgram, SendTransactionError } from "@solana/web3.js"
 import { ASSOCIATED_TOKEN_PROGRAM_ID as associatedTokenProgram, TOKEN_PROGRAM_ID as tokenProgram, createMint, createAccount, mintTo, getOrCreateAssociatedTokenAccount, getAccount, Account, getAssociatedTokenAddress } from "@solana/spl-token"
 import { randomBytes } from "crypto"
 import { assert } from "chai"
@@ -16,7 +16,7 @@ describe("anchor-escrow-2023", () => {
 
   const commitment: Commitment = "confirmed"; // processed, confirmed, finalized
 
-  const programId = new PublicKey("pCrLE3Ygn9efmpn6HC6ZDd9PKJHZEuebVERnFQ2JjXB");
+  const programId = new PublicKey("BNjQJaucdcGs2TAVRBukWy45rs7gCcVEzfc3AKPFtcf1");
   const program = new anchor.Program<AnchorEscrow2023>(IDL, programId, anchor.getProvider());
 
   // Set up our keys
@@ -26,8 +26,11 @@ describe("anchor-escrow-2023", () => {
   const seed = new BN(randomBytes(8));
   
   // PDAs
+  // attorney for program
   const auth = PublicKey.findProgramAddressSync([Buffer.from("auth")], program.programId)[0];
+  // state
   const escrow = PublicKey.findProgramAddressSync([Buffer.from("escrow"), maker.publicKey.toBytes(), seed.toBuffer().reverse()], program.programId)[0];
+  // 
   const vault = PublicKey.findProgramAddressSync([Buffer.from("vault"), escrow.toBuffer()], program.programId)[0];
 
   // Mints
@@ -64,6 +67,7 @@ describe("anchor-escrow-2023", () => {
       seed,
       new anchor.BN(10 * 1e6),
       new anchor.BN(20 * 1e6),
+      new anchor.BN(99999), // expiry
     )
     .accounts({
       maker: maker.publicKey,
@@ -87,7 +91,57 @@ describe("anchor-escrow-2023", () => {
     await(confirmTx);
   });
 
+  it("Refund an escrow", async () => {
+    const signature = await program.methods
+    .refund()
+    .accounts({
+      maker: maker.publicKey,
+      makerAta: maker_ata,
+      makerToken: maker_token,
+      auth,
+      escrow,
+      vault,
+      tokenProgram,
+      associatedTokenProgram,
+      systemProgram: SystemProgram.programId
+    })
+    .signers(
+      [
+        maker
+      ]
+    )
+    .rpc()
+    console.log("TX: ", signature);
+    await(confirmTx);
+  });
+
   it("Remake an existing escrow", async () => {
+await program.methods
+    .make(
+      seed,
+      new anchor.BN(10 * 1e6),
+      new anchor.BN(20 * 1e6),
+      new anchor.BN(99999), // expiry
+    )
+    .accounts({
+      maker: maker.publicKey,
+      makerAta: maker_ata,
+      makerToken: maker_token,
+      takerToken: taker_token,
+      auth,
+      escrow,
+      vault,
+      tokenProgram,
+      associatedTokenProgram,
+      systemProgram: SystemProgram.programId
+    })
+    .signers(
+      [
+        maker
+      ]
+    )
+    .rpc();
+
     let error = null;
     try {
       const signature = await program.methods
@@ -95,6 +149,7 @@ describe("anchor-escrow-2023", () => {
         seed,
         new anchor.BN(10 * 1e6),
         new anchor.BN(20 * 1e6),
+        new anchor.BN(1e5), // expiry
       )
       .accounts({
         maker: maker.publicKey,
@@ -122,65 +177,11 @@ describe("anchor-escrow-2023", () => {
     assert(error.logs[3].startsWith("Allocate: account Address") && error.logs[3].endsWith("already in use"));
   });
 
-  it("Refund an escrow", async () => {
-    const signature = await program.methods
-    .refund()
-    .accounts({
-      maker: maker.publicKey,
-      makerAta: maker_ata,
-      makerToken: maker_token,
-      auth,
-      escrow,
-      vault,
-      tokenProgram,
-      associatedTokenProgram,
-      systemProgram: SystemProgram.programId
-    })
-    .signers(
-      [
-        maker
-      ]
-    )
-    .rpc()
-    console.log("TX: ", signature);
-    await(confirmTx);
-  });
-
-  it("Remake an escrow", async () => {
-    const signature = await program.methods
-    .make(
-      seed,
-      new anchor.BN(10 * 1e6),
-      new anchor.BN(20 * 1e6),
-    )
-    .accounts({
-      maker: maker.publicKey,
-      makerAta: maker_ata,
-      makerToken: maker_token,
-      takerToken: taker_token,
-      auth,
-      escrow,
-      vault,
-      tokenProgram,
-      associatedTokenProgram,
-      systemProgram: SystemProgram.programId
-    })
-    .signers(
-      [
-        maker
-      ]
-    )
-    .rpc()
-    console.log("Vault TA:", vault.toBase58());
-    console.log("Escrow account:", escrow.toBase58());
-    console.log("TX: ", signature);
-    await(confirmTx);
-  });
-
   it("Update an escrow", async () => {
     const signature = await program.methods
     .update(
       new anchor.BN(12 * 1e6),
+      new anchor.BN(1e5), // expiry
     )
     .accounts({
       maker: maker.publicKey,

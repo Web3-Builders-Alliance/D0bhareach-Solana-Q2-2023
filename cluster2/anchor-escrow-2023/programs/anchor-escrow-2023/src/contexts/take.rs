@@ -1,12 +1,19 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{token::{TokenAccount, Mint, Transfer, Token, transfer, close_account, CloseAccount}, associated_token::AssociatedToken};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{close_account, transfer, CloseAccount, Mint, Token, TokenAccount, Transfer},
+};
 
 use crate::structs::Escrow;
 
 #[derive(Accounts)]
 pub struct Take<'info> {
     #[account(mut)]
+    pub taker: Signer<'info>, // taker is paying for transaction
+
+    #[account(mut)]
     pub maker: SystemAccount<'info>,
+
     #[account(
         init_if_needed,
         payer = taker,
@@ -14,15 +21,16 @@ pub struct Take<'info> {
         associated_token::authority = maker
     )]
     pub maker_receive_ata: Account<'info, TokenAccount>,
+
     pub maker_token: Box<Account<'info, Mint>>,
-    #[account(mut)]
-    pub taker: Signer<'info>,
+
     #[account(
         mut,
         associated_token::mint = taker_token,
         associated_token::authority = taker
     )]
     pub taker_ata: Account<'info, TokenAccount>,
+
     #[account(
         init_if_needed,
         payer = taker,
@@ -31,12 +39,14 @@ pub struct Take<'info> {
     )]
     pub taker_receive_ata: Account<'info, TokenAccount>,
     pub taker_token: Box<Account<'info, Mint>>,
+
     #[account(
         seeds = [b"auth"],
         bump = escrow.auth_bump
     )]
     /// CHECK: This is not dangerous because this account doesn't exist
     pub auth: UncheckedAccount<'info>,
+
     #[account(
         mut,
         seeds = [b"vault", escrow.key().as_ref()],
@@ -57,7 +67,7 @@ pub struct Take<'info> {
     pub escrow: Box<Account<'info, Escrow>>,
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
-    pub system_program: Program<'info, System>
+    pub system_program: Program<'info, System>,
 }
 
 impl<'info> Take<'info> {
@@ -72,18 +82,20 @@ impl<'info> Take<'info> {
     }
 
     pub fn empty_vault_to_taker(&self) -> Result<()> {
-        
         let cpi_accounts = Transfer {
             from: self.vault.to_account_info(),
             to: self.taker_receive_ata.to_account_info(),
             authority: self.auth.to_account_info(),
+            // that is where we need out auth to sign for transfer on behalf of the program.
         };
-        let signer_seeds = &[
-            &b"auth"[..],
-            &[self.escrow.auth_bump],
-        ];
+        // signer_seeds: &'a [&'b [&'c [u8]]], that is what expected in new_with_signer.
+        let signer_seeds = &[&b"auth"[..], &[self.escrow.auth_bump]];
         let binding = [&signer_seeds[..]];
-        let ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), cpi_accounts, &binding);
+        let ctx = CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            cpi_accounts,
+            &binding,
+        );
         transfer(ctx, self.vault.amount)
     }
 
@@ -93,12 +105,13 @@ impl<'info> Take<'info> {
             destination: self.taker.to_account_info(),
             authority: self.auth.to_account_info(),
         };
-        let signer_seeds = &[
-            &b"auth"[..],
-            &[self.escrow.auth_bump],
-        ];
+        let signer_seeds = &[&b"auth"[..], &[self.escrow.auth_bump]];
         let binding = [&signer_seeds[..]];
-        let ctx = CpiContext::new_with_signer(self.token_program.to_account_info(), cpi_accounts, &binding);
+        let ctx = CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            cpi_accounts,
+            &binding,
+        );
         close_account(ctx)
     }
 }

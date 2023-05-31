@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("pCrLE3Ygn9efmpn6HC6ZDd9PKJHZEuebVERnFQ2JjXB");
+declare_id!("BNjQJaucdcGs2TAVRBukWy45rs7gCcVEzfc3AKPFtcf1");
 
 mod errors;
 use errors::EscrowError;
@@ -37,6 +37,7 @@ pub mod anchor_escrow_2023 {
         escrow.taker_token = *ctx.accounts.taker_token.to_account_info().key;
         escrow.seed = seed;
         escrow.offer_amount = offer_amount;
+        // all these bumps were created during initializing context for this fn.
         escrow.auth_bump = *ctx.bumps.get("auth").ok_or(EscrowError::AuthBump)?;
         escrow.vault_bump = *ctx.bumps.get("vault").ok_or(EscrowError::VaultBump)?;
         escrow.escrow_bump = *ctx.bumps.get("escrow").ok_or(EscrowError::EscrowBump)?;
