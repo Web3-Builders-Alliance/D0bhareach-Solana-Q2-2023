@@ -11,6 +11,10 @@ import { expect } from 'chai';
 
 chai.use(chaiAsPromised);
 
+// need to setup two mints with mint authority would be the wallet.
+// need to set up two accounts for exchange one with mint apples and one with mint oranges.
+// 
+
 function getAnchorProvider(file:string/*, cluster: any*/): anchor.AnchorProvider {
   const home = os.homedir();
   const commitment: Commitment = 'confirmed';
