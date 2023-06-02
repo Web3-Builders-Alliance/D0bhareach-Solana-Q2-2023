@@ -22,9 +22,9 @@ pub mod anchor_escrow_2023 {
         expiry: u64,
     ) -> Result<()> {
         // escrow expiration is too far in the future
-        require!(expiry.lt(&EPIRE_TIME), EscrowError::MaxExpiryExceeded);
         let escrow = &mut ctx.accounts.escrow;
-        escrow.expiry = if expiry > 0 {
+        escrow.expiry = if expiry.gt(&0) {
+            require!(expiry.lt(&EPIRE_TIME), EscrowError::MaxExpiryExceeded);
             Clock::get()?
                 .slot
                 .checked_add(expiry)

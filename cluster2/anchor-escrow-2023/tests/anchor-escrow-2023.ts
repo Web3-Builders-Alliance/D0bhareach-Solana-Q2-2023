@@ -67,7 +67,7 @@ describe("anchor-escrow-2023", () => {
       seed,
       new anchor.BN(10 * 1e6),
       new anchor.BN(20 * 1e6),
-      new anchor.BN(99999), // expiry
+      new anchor.BN(0), // expiry
     )
     .accounts({
       maker: maker.publicKey,
