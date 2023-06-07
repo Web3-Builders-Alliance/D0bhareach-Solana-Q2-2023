@@ -8,7 +8,7 @@ mod contexts;
 mod structs;
 use contexts::*;
 
-const EPIRE_TIME: u64 = 100_000;
+const EXPIRE_TIME: u64 = 100_000;
 // need exiration time.
 #[program]
 pub mod anchor_escrow_2023 {
@@ -24,7 +24,7 @@ pub mod anchor_escrow_2023 {
         // escrow expiration is too far in the future
         let escrow = &mut ctx.accounts.escrow;
         escrow.expiry = if expiry.gt(&0) {
-            require!(expiry.lt(&EPIRE_TIME), EscrowError::MaxExpiryExceeded);
+            require!(expiry.lt(&EXPIRE_TIME), EscrowError::MaxExpiryExceeded);
             Clock::get()?
                 .slot
                 .checked_add(expiry)

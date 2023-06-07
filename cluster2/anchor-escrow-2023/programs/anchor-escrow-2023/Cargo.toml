@@ -16,5 +16,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = { git = "https://github.com/coral-xyz/anchor.git", features = ["init-if-needed"]}
-anchor-spl = { git = "https://github.com/coral-xyz/anchor.git"}
+# anchor-lang = { git = "https://github.com/coral-xyz/anchor.git", features = ["init-if-needed"]}
+# anchor-spl = { git = "https://github.com/coral-xyz/anchor.git"}
+anchor-lang = { path = "/home/ferrislav/projects/rust/github/anchor/lang", features = ["init-if-needed"]}
+anchor-spl = { path = "/home/ferrislav/projects/rust/github/anchor/spl"}

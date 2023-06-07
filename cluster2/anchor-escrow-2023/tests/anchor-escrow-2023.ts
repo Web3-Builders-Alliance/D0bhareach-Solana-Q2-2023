@@ -121,7 +121,7 @@ await program.methods
       seed,
       new anchor.BN(10 * 1e6),
       new anchor.BN(20 * 1e6),
-      new anchor.BN(99999), // expiry
+      new anchor.BN(10000), // expiry
     )
     .accounts({
       maker: maker.publicKey,
