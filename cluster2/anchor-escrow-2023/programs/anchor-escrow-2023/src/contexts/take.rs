@@ -24,6 +24,9 @@ pub struct Take<'info> {
 
     pub maker_token: Box<Account<'info, Mint>>,
 
+    #[account(mut)]
+    pub taker: Signer<'info>,
+
     #[account(
         mut,
         associated_token::mint = taker_token,

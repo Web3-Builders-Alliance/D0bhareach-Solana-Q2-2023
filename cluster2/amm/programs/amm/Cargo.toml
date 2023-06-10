@@ -16,4 +16,9 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.27.0"
+anchor-lang = { path = "/home/ferrislav/projects/rust/github/anchor/lang", features = ["init-if-needed"]}
+anchor-spl = { path = "/home/ferrislav/projects/rust/github/anchor/spl"}
+getrandom = { version = "0.2.9", features = ["custom"] }
+solana-program = "=1.14.18"
+winnow="=0.4.1"
+toml_datetime="=0.6.1"

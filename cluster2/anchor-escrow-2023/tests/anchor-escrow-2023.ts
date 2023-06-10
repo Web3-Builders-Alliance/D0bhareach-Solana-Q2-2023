@@ -67,7 +67,11 @@ describe("anchor-escrow-2023", () => {
       seed,
       new anchor.BN(10 * 1e6),
       new anchor.BN(20 * 1e6),
+<<<<<<< HEAD
       new anchor.BN(0), // expiry
+=======
+      new anchor.BN(99999), // expiry
+>>>>>>> w
     )
     .accounts({
       maker: maker.publicKey,
@@ -121,7 +125,7 @@ await program.methods
       seed,
       new anchor.BN(10 * 1e6),
       new anchor.BN(20 * 1e6),
-      new anchor.BN(10000), // expiry
+      new anchor.BN(99999), // expiry
     )
     .accounts({
       maker: maker.publicKey,
